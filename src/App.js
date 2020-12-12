@@ -1,10 +1,11 @@
 import React from 'react';
-import { Route } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 
 import HomePage from './pages/homepage/homepage.component';
 import ShopPage from './pages/shop/shop.component';
 import Header from './components/header/header.component'
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component'
+import { auth } from './firebase/firebase.utils.js'
 
 import './App.css';
 
@@ -31,30 +32,54 @@ import './App.css';
 //   )
 // }
 
-function App() {
-  return (    
-    <div>
-      <Header />
-      <switch>
-        <Route exact path='/' component={HomePage} />
-        <Route exact path='/shop' component={ShopPage} />
-        <Route path='/signin' component={SignInAndSignUpPage} />
-        {/* <Route exact path='/topics' component={TopicsList} />
-        <Route path='/topics/:topicId' component={TopicDetail} />
-        <Route exact path='/blog/topics' component={TopicsList} />
-        <Route path='/blog/topics/:topicId' component={TopicDetail} /> */}
-      </switch>
-    </div>
+class App extends React.Component {
+  constructor() {
+    super()
 
-    // <div>
-    //   <Route exact path='/' component={HomePage} />
-    //   <Route path='/hats' component={HatsPage} />
-    // </div>
+    this.state = {
+      currentUser: null
+    }
+  }
 
-    // <div className='App'>
-    //   <HomePage />
-    // </div>
-  )
+  unsubscribeFromAuth = null // This is a class property, this isn't a built-in firebase method
+
+  componentDidMount() {
+    auth.onAuthStateChanged(user => {
+      this.setState({ currentUser: user })
+
+      console.log(user)
+    })
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeFromAuth() // unmount the current component, unsubscribeFromAuth sets to null, and onAuthStateChanged is returning a function "firebase.unsubscribe"
+  } 
+  
+  render() {
+    return (    
+      <div>
+        <Header currentUser={this.state.currentUser} />
+        <Switch>
+          <Route exact path='/' component={HomePage} />
+          <Route exact path='/shop' component={ShopPage} />
+          <Route path='/signin' component={SignInAndSignUpPage} />
+          {/* <Route exact path='/topics' component={TopicsList} />
+          <Route path='/topics/:topicId' component={TopicDetail} />
+          <Route exact path='/blog/topics' component={TopicsList} />
+          <Route path='/blog/topics/:topicId' component={TopicDetail} /> */}
+        </Switch>
+      </div>
+
+      // <div>
+      //   <Route exact path='/' component={HomePage} />
+      //   <Route path='/hats' component={HatsPage} />
+      // </div>
+
+      // <div className='App'>
+      //   <HomePage />
+      // </div>
+    )
+  }  
 }
 
 export default App;
