@@ -14,6 +14,34 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig)
 
+export const createUserProfileDocument = async (userAuth, additionalData)  => {
+  if(!userAuth) return;
+
+  // const userRef = firestore.doc('users/123') // fake data
+  const userRef = firestore.doc(`users/${userAuth.uid}`)
+
+  const snapShot = await userRef.get()
+  // !userAuth means not null => true
+
+  if(!snapShot.exist) {
+    const { displayName, email } = userAuth
+    const createdAt = new Date()
+
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData
+      })
+    } catch (error) {
+        console.log('error creating user', error.message)
+    }
+  }
+  return userRef 
+  // console.log(snapShot) // Document Reference: e {_: t, firestore: e, Hf: e} > id
+}
+
 export const auth = firebase.auth()
 export const firestore = firebase.firestore()
 
@@ -24,4 +52,7 @@ export const signInWithGoogle = () => auth.signInWithPopup(provider)
 
 export default firebase
 
-
+// firestore fetch data:
+// firestore.collection('users').doc('2H3V9Y3i1ina5Bx0CphG').collection('cartItems').doc('l41OJh2XtCrrNsGljTcx')
+// firestore.doc('/users/2H3V9Y3i1ina5Bx0CphG/cartItems/doc/l41OJh2XtCrrNsGljTcx')
+// firestore.collection('/users/2H3V9Y3i1ina5Bx0CphG/cartItems')

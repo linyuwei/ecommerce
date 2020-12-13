@@ -5,7 +5,7 @@ import HomePage from './pages/homepage/homepage.component';
 import ShopPage from './pages/shop/shop.component';
 import Header from './components/header/header.component'
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component'
-import { auth } from './firebase/firebase.utils.js'
+import { auth, createUserProfileDocument } from './firebase/firebase.utils.js'
 
 import './App.css';
 
@@ -41,18 +41,31 @@ class App extends React.Component {
     }
   }
 
-  unsubscribeFromAuth = null // This is a class property, this isn't a built-in firebase method
+  unsubscribeFromAuth = null
 
   componentDidMount() {
-    auth.onAuthStateChanged(user => {
-      this.setState({ currentUser: user })
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth)
 
-      console.log(user)
+        userRef.onSnapshot(snapShot => {
+          console.log({snapShot: snapShot.data()})
+
+          this.setState({
+            currentUser: {
+              id: snapShot.id,
+              ...snapShot.data()
+            }
+          }, () => console.log(this.state.currentUser))
+        })
+      } else {
+        this.setState({ currentUser: userAuth})
+      }
     })
   }
 
   componentWillUnmount() {
-    this.unsubscribeFromAuth() // unmount the current component, unsubscribeFromAuth sets to null, and onAuthStateChanged is returning a function "firebase.unsubscribe"
+    this.unsubscribeFromAuth()
   } 
   
   render() {
