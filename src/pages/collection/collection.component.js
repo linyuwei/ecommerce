@@ -9,7 +9,7 @@ import './collection.styles.scss'
 
 const CollectionPage = ({ collection }) => {
   // console.log(match.params.collectionId)
-  console.log(collection)
+  // console.log(collection)
   const { title, items } = collection
   return (
     <div className='collection-page'>
