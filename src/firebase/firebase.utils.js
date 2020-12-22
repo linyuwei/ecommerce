@@ -14,8 +14,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig)
 
-export const createUserProfileDocument = async (userAuth, additionalData)  => {
-  if(!userAuth) return;
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
 
   // const userRef = firestore.doc('users/123') // fake data
   const userRef = firestore.doc(`users/${userAuth.uid}`)
@@ -40,6 +40,39 @@ export const createUserProfileDocument = async (userAuth, additionalData)  => {
   }
   return userRef 
   // console.log(snapShot) // Document Reference: e {_: t, firestore: e, Hf: e} > id
+}
+
+export const addCollectionAndDocuments = async (collectionKey, ObjectsToAdd) => {
+  const collectionRef = firestore.collection(collectionKey)
+  console.log(collectionRef) // e {_: e, firestore: e, Hf: e}
+
+  const batch = firestore.batch()
+  ObjectsToAdd.forEach(obj => {
+    const newDocRef = collectionRef.doc() // generate unique ID
+    console.log(newDocRef) // e {_: e, firestore: e, Hf: e}
+    batch.set(newDocRef, obj)
+  })
+
+  return await batch.commit() // fire off batch request. commit is a promise, can use chain function
+}
+
+export const convertCollectionsSnapshotToMap = collectionsSnapshot => {
+  const transformedCollection = collectionsSnapshot.docs.map(docSnapshot => {
+    const { title, items } = docSnapshot.data()
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: docSnapshot.id,
+      title,
+      items
+    }
+  })
+  // convert [] to {}
+  console.log(transformedCollection)
+
+  return transformedCollection.reduce((acc, collection) => {
+    acc[collection.title.toLowerCase()] = collection
+    return acc
+  }, {}) // {} initial obj
 }
 
 export const auth = firebase.auth()
